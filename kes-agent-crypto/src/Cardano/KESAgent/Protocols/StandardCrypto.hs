@@ -41,7 +41,7 @@ data MockCrypto
 -- scheme, and the two packages must be built with the same defines:
 --
 -- > package kes-agent-crypto
--- >   cpp-options: -DPQ_KES_MLDSA44 -DPQ_KES_PAD=3636 -DPQ_KES_SPIN=0
+-- >   ghc-options: -DPQ_KES_MLDSA44 -DPQ_KES_PAD=3636 -DPQ_KES_SPIN=0
 --
 -- With no defines the scheme is mainnet's Sum6KES Ed25519DSIGN Blake2b_256
 -- wrapped in PaddedKES 0 0, which changes nothing but the algorithm name.

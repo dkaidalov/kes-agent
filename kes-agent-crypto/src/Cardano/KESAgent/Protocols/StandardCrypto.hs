@@ -35,25 +35,33 @@ data SingleCrypto
 -- | Mock crypto. Only used for testing.
 data MockCrypto
 
--- Experimental KES selection for the post-quantum header experiments. The
--- same CPP define as cardano-ledger's Cardano.Protocol.Crypto selects the
--- scheme, and the two packages must be built with the same define, normally
--- from cabal.project.local:
+-- Experimental scheme selection for the post-quantum header experiments. The
+-- same CPP defines as cardano-ledger's Cardano.Protocol.Crypto (KES) and
+-- Cardano.Ledger.Keys (DSIGN) select the schemes, and the packages must be
+-- built with the same defines, normally from cabal.project.local:
 --
 -- > package kes-agent-crypto
--- >   ghc-options: -DPQ_KES_MLDSA44
+-- >   ghc-options: -DPQ_KES_MLDSA44 -DPQ_DSIGN_MLDSA44
 --
 -- * @PQ_KES_MLDSA44@: @HashedCompactSum6KES MLDSA44DSIGN Blake2b_256@ instead
 --   of mainnet's @Sum6KES Ed25519DSIGN Blake2b_256@.
+-- * @PQ_DSIGN_MLDSA44@: @MLDSA44DSIGN@ instead of @Ed25519DSIGN@ for the cold
+--   key that signs operational certificates.
 #if defined(PQ_KES_MLDSA44)
 type StandardKES = HashedCompactSum6KES MLDSA44DSIGN Blake2b_256
 #else
 type StandardKES = Sum6KES Ed25519DSIGN Blake2b_256
 #endif
 
+#if defined(PQ_DSIGN_MLDSA44)
+type StandardDSIGN = MLDSA44DSIGN
+#else
+type StandardDSIGN = Ed25519DSIGN
+#endif
+
 instance Crypto StandardCrypto where
   type KES StandardCrypto = StandardKES
-  type DSIGN StandardCrypto = Ed25519DSIGN
+  type DSIGN StandardCrypto = StandardDSIGN
 
 instance Crypto CompactStandardCrypto where
   type KES CompactStandardCrypto = CompactSum6KES Ed25519DSIGN Blake2b_256

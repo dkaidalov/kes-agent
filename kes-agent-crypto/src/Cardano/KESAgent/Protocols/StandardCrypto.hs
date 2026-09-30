@@ -19,7 +19,6 @@ import Cardano.Crypto.Hash.Blake2b
 import Cardano.Crypto.KES.CompactSum
 import Cardano.Crypto.KES.HashedSingle (HashedCompactSum6KES)
 import Cardano.Crypto.KES.Mock
-import Cardano.Crypto.KES.Padded (PaddedKES)
 import Cardano.Crypto.KES.Single
 import Cardano.Crypto.KES.Sum
 
@@ -37,29 +36,23 @@ data SingleCrypto
 data MockCrypto
 
 -- Experimental KES selection for the post-quantum header experiments. The
--- same CPP defines as cardano-ledger's Cardano.Protocol.Crypto select the
--- scheme, and the two packages must be built with the same defines:
+-- same CPP define as cardano-ledger's Cardano.Protocol.Crypto selects the
+-- scheme, and the two packages must be built with the same define, normally
+-- from cabal.project.local:
 --
 -- > package kes-agent-crypto
--- >   ghc-options: -DPQ_KES_MLDSA44 -DPQ_KES_PAD=3636 -DPQ_KES_SPIN=0
+-- >   ghc-options: -DPQ_KES_MLDSA44
 --
--- With no defines the scheme is mainnet's Sum6KES Ed25519DSIGN Blake2b_256
--- wrapped in PaddedKES 0 0, which changes nothing but the algorithm name.
-#ifndef PQ_KES_PAD
-#define PQ_KES_PAD 0
-#endif
-#ifndef PQ_KES_SPIN
-#define PQ_KES_SPIN 0
-#endif
-
+-- * @PQ_KES_MLDSA44@: @HashedCompactSum6KES MLDSA44DSIGN Blake2b_256@ instead
+--   of mainnet's @Sum6KES Ed25519DSIGN Blake2b_256@.
 #if defined(PQ_KES_MLDSA44)
-type StandardKESInner = HashedCompactSum6KES MLDSA44DSIGN Blake2b_256
+type StandardKES = HashedCompactSum6KES MLDSA44DSIGN Blake2b_256
 #else
-type StandardKESInner = Sum6KES Ed25519DSIGN Blake2b_256
+type StandardKES = Sum6KES Ed25519DSIGN Blake2b_256
 #endif
 
 instance Crypto StandardCrypto where
-  type KES StandardCrypto = PaddedKES PQ_KES_PAD PQ_KES_SPIN StandardKESInner
+  type KES StandardCrypto = StandardKES
   type DSIGN StandardCrypto = Ed25519DSIGN
 
 instance Crypto CompactStandardCrypto where

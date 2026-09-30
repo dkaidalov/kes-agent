@@ -41,7 +41,6 @@ import Cardano.Crypto.KES.CompactSingle
 import Cardano.Crypto.KES.CompactSum
 import Cardano.Crypto.KES.HashedSingle
 import Cardano.Crypto.KES.Mock
-import Cardano.Crypto.KES.Padded
 import Cardano.Crypto.KES.Single
 import Cardano.Crypto.KES.Sum
 import Cardano.Crypto.Libsodium.Hash.Class
@@ -898,31 +897,7 @@ instance
   encode _ = encodeSized versionIdentifierLength . unVersionIdentifier
   decode _ = VersionIdentifier <$> decodeSized versionIdentifierLength
 
--- *** 'PaddedKES' and 'HashedSingleKES' (post-quantum header experiments)
-
--- A padded scheme's keys are the wrapped scheme's keys; only signatures
--- carry the padding, and the agent never serialises signatures.
-instance
-  ( KESAlgorithm (PaddedKES pad spinUs kes)
-  , HasInfo (DirectCodec m) (VerKeyKES kes)
-  ) =>
-  HasInfo (DirectCodec m) (VerKeyKES (PaddedKES pad spinUs kes))
-  where
-  info codec _ =
-    aliasField
-      ("VerKeyKES<" ++ algorithmNameKES (Proxy @(PaddedKES pad spinUs kes)) ++ ">")
-      (info codec (Proxy @(VerKeyKES kes)))
-
-instance
-  ( KESAlgorithm (PaddedKES pad spinUs kes)
-  , HasInfo (DirectCodec m) (SignKeyKES kes)
-  ) =>
-  HasInfo (DirectCodec m) (SignKeyKES (PaddedKES pad spinUs kes))
-  where
-  info codec _ =
-    aliasField
-      ("SignKeyKES<" ++ algorithmNameKES (Proxy @(PaddedKES pad spinUs kes)) ++ ">")
-      (info codec (Proxy @(SignKeyKES kes)))
+-- *** 'HashedSingleKES' (post-quantum header experiments)
 
 -- A hashed single-period leaf: the verification key is a hash of the DSIGN
 -- key, the signing key is the DSIGN signing key.
